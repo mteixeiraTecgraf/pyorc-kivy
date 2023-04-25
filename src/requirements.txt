@@ -1,0 +1,3 @@
+xarray
+pyopenrivercam==0.2.3
+#cartopy

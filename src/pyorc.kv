@@ -1,0 +1,86 @@
+#:kivy 1.0
+#:import kivy kivy
+#:import win kivy.core.window
+
+
+Widget:
+    canvas:
+        Color:
+            rgb: .85, .87, .88
+        Rectangle:
+            size: self.size
+
+    Button:
+        text: 'Take a picture'
+        width: self.texture_size[0] + dp(40)
+        height: '48dp'
+
+        on_release: app.run2()
+<LoginScreen>:
+    GridLayout:
+        rows: 2
+        cols: 2
+        padding: 10
+        spacing: 10
+        Label:
+            text: "User"
+        Label:
+            text: "User"
+        Label:
+            text: "User"
+        Label:
+            text: "User"
+
+<Picture>:
+    # each time a picture is created, the image can delay the loading
+    # as soon as the image is loaded, ensure that the center is changed
+    # to the center of the screen.
+    on_size: self.center = win.Window.center
+    size: image.size
+    size_hint: None, None
+
+    Image:
+        id: image
+        source: root.source
+
+        # create initial image to be 400 pixels width
+        size: 400, 400 / self.image_ratio
+
+        # add shadow background
+        canvas.before:
+            Color:
+                rgba: 1,1,1,1
+            BorderImage:
+                source: 'shadow32.png'
+                border: (36,36,36,36)
+                size:(self.width+72, self.height+72)
+                pos: (-36,-36)
+
+<MyWidget>:
+    label_widget: label_widget
+    Button:
+        text: 'Add Button'
+        on_press: root.add_widget(label_widget)
+    Button:
+        text: 'Remove Button'
+        on_press: root.remove_widget(label_widget)
+    Label:
+        id: label_widget
+        text: 'widget'
+    
+<CameraClick>:
+    orientation: 'vertical'
+    Camera:
+        id: camera
+        resolution: (640, 480)
+        play: False
+    ToggleButton:
+        text: 'Play'
+        on_press: camera.play = not camera.play
+        size_hint_y: None
+        height: '48dp'
+    Button:
+        text: 'Capture'
+        size_hint_y: None
+        height: '48dp'
+        on_press: root.capture()

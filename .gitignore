@@ -1,0 +1,8 @@
+buildozer/*
+kivy_venv/*
+kivy_venv2/*
+kivy_venv3/*
+.buildozer/*
+.buildozer2/*
+bin/*
+src/__pycache__/*

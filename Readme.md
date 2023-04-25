@@ -1,0 +1,32 @@
+
+
+ - Rodar o Kivy OK
+    - Docker FAIL
+    - WSL Ok
+ - Deploy Android
+    - Python-for-android https://github.com/kivy/python-for-android
+        - ? imagem 
+    - Buildozer
+
+ - consegui reusar o docker
+ - usando buildozer docker
+ - problema em baixar o android-ndk-r25b-linux-x86_64.zip
+    - Como mudar parametro? nao existe mais r25b(tem r25c nao x86_64)
+    - existe r25b-linux(sem x86_64)
+    - foi extraido manualmente na pasta .buildozer/android/platform
+     - em android-ndk-r25b
+     - buildozer angular... continuou corretamente
+ - kivy parece estar se mostrando desnecessario no deploy
+ - consegui rodar no emulador o teste inicial(x86)
+ - importante verificar android.arch dependendo do device
+ - camera - permissoes android.permission.CAMERA,android.permission.WRITE_EXTERNAL_STORAGE
+ - 
+
+
+ - Tarefas
+  - Testar kivy em android - OK
+  - Testar codigo python em android - OK
+  - Testar exemplos mais complexos de android - OK
+  - Testar api em android/kivy
+  - Testar codigo do pyorc em android
+  - Testar integracao app android com serverzip

@@ -9,7 +9,7 @@
     "drbv": "npm run docker:run:buildozerversion",
     "buildozer": "npm run docker:run:buildozer",
     "buildozerinit": "npm run docker:run:buildozer -- init",
-    "android": "npm run docker:run:buildozer -- android debug deploy run",
+    "android": "npm run docker:run:buildozer -- -v android debug",
     "docker:build:buildozer": "docker run  --volume \"$HOME/.buildozer\":/home/user/.buildozer --volume \"$PWD\":/home/user/hostcwd kivy/buildozer --version",
     "docker:build": "sudo docker build -t kivy .",
     "echo":"echo $PWD",
@@ -22,6 +22,8 @@
     "check-env": "node -e 'console.log(process.env)' | grep npm",
     "check-env2": "node -e 'console.log(process.env)' ",
 
+    "step1":"source kivy_venv/bin/activate",
+    "step2":"cd src && python main.py",
 
     "test": "echo \"Error: no test specified\" && exit 1"
   },

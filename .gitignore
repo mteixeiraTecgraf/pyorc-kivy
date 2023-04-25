@@ -6,3 +6,5 @@ kivy_venv3/*
 .buildozer2/*
 bin/*
 src/__pycache__/*
+src/.buildozer/*
+src/bin/*

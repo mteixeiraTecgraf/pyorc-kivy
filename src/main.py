@@ -83,6 +83,8 @@ class PyorcApp(App):
             self.step3()
         if self.count == 4:
             self.step4()
+        if self.count == 5:
+            self.step5()
         self.count=self.count+1
 
     def step1(self):
@@ -113,6 +115,9 @@ class PyorcApp(App):
         
     def step4(self):
         self.application.plot_velocity()
+        
+    def step5(self):
+        self.application.camera_calibration()
 
     def take_picture(self):
         self.controller.take_picture()

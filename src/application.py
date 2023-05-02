@@ -7,6 +7,7 @@ import cartopy
 import cartopy.crs as ccrs
 
 from  kivy.uix.image import Image
+from dask.diagnostics import ProgressBar
 import os
 
 class Application:
@@ -25,7 +26,7 @@ class Application:
         f = plt.figure(figsize=(10, 6))
         #picture = Image(source=filename, rotation=randint(-30, 30))
         plt.imshow(frame)
-        self.saveAndAdd("1.jpg")
+        self.saveAndAdd("1.1.jpg")
         gcps = self._mark_points_in_Picture(frame)
 
         f = plt.figure(figsize=(16, 9))
@@ -33,25 +34,25 @@ class Application:
         plt.legend()
 
         plt.imshow(frame)
-        self.saveAndAdd("2.jpg")
+        self.saveAndAdd("1.2.jpg")
         gcps["dst"] = self._enter_world_coordinates()
         gcps["z_0"] = self._enter_z0()
         height, width = frame.shape[0:2]
         #cam_config = pyorc.CameraConfig(height=height, width=width, gcps=gcps, crs=32735)
-        cam_config = pyorc.CameraConfig(gcps=gcps, crs=32735)
+        cam_config = pyorc.CameraConfig(height=height, width=width, gcps=gcps, crs=32735)
         if 0==1:
             ax = cam_config.plot(tiles="GoogleTiles", tiles_kwargs={"style": "satellite"})
             print(ax)
             print("Tiles gootle print")
-            self.saveAndAdd("2b.jpg")
+            self.saveAndAdd("1.2b.jpg")
         corners = [
             [292, 817],
             [50, 166],
             [1200, 236],
             [1600, 834]
         ]
-        #cam_config.set_bbox_from_corners(corners)
-        cam_config.set_corners(corners)
+        cam_config.set_bbox_from_corners(corners)
+        #cam_config.set_corners(corners)
         cam_config.resolution = 0.01
         cam_config.window_size = 25
         f = plt.figure(figsize=(10, 6))
@@ -60,7 +61,16 @@ class Application:
         plt.plot(*zip(*gcps["src"]), "rx", markersize=20, label="Control points")
         plt.plot(*zip(*corners), "co", label="Corners of AOI")
         plt.legend()
-        self.saveAndAdd("3.jpg")
+        self.saveAndAdd("1.3.jpg")
+
+        #ax1 = cam_config.plot(tiles="GoogleTiles", tiles_kwargs={"style": "satellite"})
+        f = plt.figure()
+        ax2 = plt.axes()
+        ax2.imshow(frame)
+        cam_config.plot(ax=ax2, camera=True)
+
+        plt.savefig(self.pathOf("ngwerere_camconfig.jpg"), bbox_inches="tight", dpi=72)
+
 
         cam_config.to_file(self.pathOf("ngwerere.json"))
         #plt.savefig("3.jpg", bbox_inches="tight", dpi=72)
@@ -102,13 +112,13 @@ class Application:
         return 1182.2
     def process_video_piv(self):
         
-        cam_config = pyorc.load_camera_config(self.pathOf("config2.json"))
+        cam_config = pyorc.load_camera_config(self.pathOf("config2b.json"))
         video_file = self.pathOf("ngwerere_20191103.mp4")
-        video = pyorc.Video(video_file, camera_config=cam_config, start_frame=0, end_frame=125)
+        video = pyorc.Video(video_file, camera_config=cam_config, start_frame=0, end_frame=125, stabilize="fixed", h_a=0.)
         print(video)
         da = video.get_frames()
         da[0].frames.plot(cmap="gray")
-        self.saveAndAdd("4.jpg")
+        self.saveAndAdd("2.1.jpg")
         #plt.imshow(frame)
         #plt.savefig("2.jpg", bbox_inches="tight", dpi=72)
 
@@ -117,7 +127,30 @@ class Application:
         f = plt.figure(figsize=(16, 9))
         da_norm_proj = da_norm.frames.project()
         da_norm_proj[0].frames.plot(cmap="gray")
-        self.saveAndAdd("5.jpg")
+        self.saveAndAdd("2.2.jpg")
+
+
+        print("PreGeograph")
+        da_rgb = video.get_frames(method="rgb")
+        da_rgb_proj = da_rgb.frames.project()
+
+        if 0==1:
+            p = da_rgb_proj[0].frames.plot(mode="geographical")
+        
+            print("PreCartoImport")
+            import cartopy.io.img_tiles as cimgt
+            import cartopy.crs as ccrs
+            tiles = cimgt.GoogleTiles(style="satellite")
+            print("Preaxis")
+            p.axes.add_image(tiles, 19)
+            p.axes.set_extent([
+                da_rgb_proj.lon.min() - 0.0001,
+                da_rgb_proj.lon.max() + 0.0001,
+                da_rgb_proj.lat.min() - 0.0001,
+                da_rgb_proj.lat.max() + 0.0001],
+                crs=ccrs.PlateCarree()
+            )
+            self.saveAndAdd("5b.jpg")
 
         piv = da_norm_proj.frames.get_piv()
         delayed_obj = piv.to_netcdf(self.pathOf("ngwerere_piv.nc"), compute=False)
@@ -134,7 +167,7 @@ class Application:
         da_rgb = video.get_frames(method="rgb")
         da_rgb_proj = da_rgb.frames.project()
         p = da_rgb_proj[0].frames.plot()
-        self.saveAndAdd("6.jpg")
+        self.saveAndAdd("3.1.jpg")
         ds_mean = ds.mean(dim="time", keep_attrs=True)
         ds_mean.velocimetry.plot.pcolormesh(
             ax=p.axes,
@@ -149,12 +182,24 @@ class Application:
             alpha=0.5,
             width=0.0015,
         )
-        self.saveAndAdd("7.jpg")
+        self.saveAndAdd("3.2.jpg")
 
-        ds_filt = ds.velocimetry.filter_temporal()
-        ds_mean_filt = ds_filt.mean(dim="time", keep_attrs=True)
+        import copy
+        ds_mask = copy.deepcopy(ds)
+        mask_corr = ds_mask.velocimetry.mask.corr(inplace=True)
+        mask_minmax = ds_mask.velocimetry.mask.minmax(inplace=True)
+        mask_rolling = ds_mask.velocimetry.mask.rolling(inplace=True)
+        mask_outliers = ds_mask.velocimetry.mask.outliers(inplace=True)
+        mask_var = ds_mask.velocimetry.mask.variance(inplace=True)
+        mask_angle = ds_mask.velocimetry.mask.angle(inplace=True)
+        mask_count = ds_mask.velocimetry.mask.count(inplace=True)
+
+        ds_mean_mask = ds_mask.mean(dim="time", keep_attrs=True)
+
+        #ds_filt = ds.velocimetry.filter_temporal()
+        #ds_mean_filt = ds_filt.mean(dim="time", keep_attrs=True)
         p = da_rgb_proj[0].frames.plot()
-        ds_mean_filt.velocimetry.plot(
+        ds_mean_mask.velocimetry.plot(
             ax=p.axes,
             alpha=0.4,
             cmap="rainbow",
@@ -163,15 +208,29 @@ class Application:
             norm=Normalize(vmax=0.6, clip=False),
             add_colorbar=True
         )
-        self.saveAndAdd("8.jpg")
+        self.saveAndAdd("3.3.jpg")
 
         import numpy as np
-        ds_filt2 = ds.velocimetry.filter_temporal(kwargs_angle=dict(angle_tolerance=0.5*np.pi))
-        ds_filt2.velocimetry.filter_spatial(filter_nan=False, inplace=True, kwargs_median=dict(wdw=2))
-        ds_mean_filt2 = ds_filt2.mean(dim="time", keep_attrs=True)
+
+        ds_mask2 = copy.deepcopy(ds)
+        ds_mask2.velocimetry.mask.corr(inplace=True)
+        ds_mask2.velocimetry.mask.minmax(inplace=True)
+        ds_mask2.velocimetry.mask.rolling(inplace=True)
+        ds_mask2.velocimetry.mask.outliers(inplace=True)
+        ds_mask2.velocimetry.mask.variance(inplace=True)
+        ds_mask2.velocimetry.mask.angle(angle_tolerance=0.5*np.pi)
+        ds_mask2.velocimetry.mask.count(inplace=True)
+        ds_mask2.velocimetry.mask.window_mean(wdw=2, inplace=True, tolerance=0.5, reduce_time=True)
+
+        # Now first average in time before applying any filter that only works in space.
+        ds_mean_mask2 = ds_mask2.mean(dim="time", keep_attrs=True)
+
+        #ds_filt2 = ds.velocimetry.filter_temporal(kwargs_angle=dict(angle_tolerance=0.5*np.pi))
+        #ds_filt2.velocimetry.filter_spatial(filter_nan=False, inplace=True, kwargs_median=dict(wdw=2))
+        ds_mean_mask2 = ds_mask2.mean(dim="time", keep_attrs=True)
         p = da_rgb_proj[0].frames.plot()
 
-        ds_mean_filt2.velocimetry.plot(
+        ds_mean_mask2.velocimetry.plot(
             ax=p.axes,
             alpha=0.4,
             cmap="rainbow",
@@ -180,12 +239,12 @@ class Application:
             norm=Normalize(vmax=0.6, clip=False),
             add_colorbar=True
         )
-        self.saveAndAdd("9.jpg")
+        self.saveAndAdd("3.4.jpg")
 
         #p = da_rgb_proj[0].frames.plot(mode="geographical")
         
         p = da_rgb[0].frames.plot(mode="camera")
-        ds_mean_filt2.velocimetry.plot(
+        ds_mean_mask2.velocimetry.plot(
             ax=p.axes,
             mode="camera",
             alpha=0.4,
@@ -195,19 +254,19 @@ class Application:
             norm=Normalize(vmin=0., vmax=0.6, clip=False),
             add_colorbar=True
         )
-        self.saveAndAdd("10.jpg")
-        ds_filt2.velocimetry.set_encoding()
-        ds_filt2.to_netcdf(self.pathOf("ngwerere_filtered.nc"))
+        self.saveAndAdd("3.5.jpg")
+        ds_mask2.velocimetry.set_encoding()
+        ds_mask2.to_netcdf(self.pathOf("ngwerere_filtered.nc"))
         frame = video.get_frame(0, method="rgb")
-        #da_rgb_proj[0].frames.to_video("3-1.mp4")
-        #print(da_rgb_proj[0].frames)
-        #plt.imshow(frame)
-        p.axes.figure.savefig("3-1.jpg", dpi=200)
+        da_rgb_proj[0].frames.to_video("3-1.mp4")
+        print(da_rgb_proj[0].frames)
+        plt.imshow(frame)
+        p.axes.figure.savefig(self.pathOf("3-1.jpg"), dpi=200)
 
     def plot_velocity(self):
         
         import pandas as pd
-        ds = xr.open_dataset(self.pathOf("ngwerere_filtered_input.nc"))
+        ds = xr.open_dataset(self.pathOf("ngwerere_masked.nc"))
 
         # also open the original video file
         video_file = self.pathOf("ngwerere_20191103.mp4")
@@ -227,15 +286,18 @@ class Application:
         x2 = cross_section2["x"]
         y2 = cross_section2["y"]
         z2 = cross_section2["z"]
+
+
         ds_points = ds.velocimetry.get_transect(x, y, z, crs=32735, rolling=4)
         ds_points2 = ds.velocimetry.get_transect(x2, y2, z2, crs=32735, rolling=4)
-        ds_points_q = ds_points.transect.get_q()
-        ds_points_q2 = ds_points2.transect.get_q()
+        ds_points_q = ds_points.transect.get_q(fill_method="log_interp")
+        ds_points_q2 = ds_points2.transect.get_q(fill_method="log_interp")
         ax = plt.axes()
         ds_points_q["v_eff"].isel(quantile=2).plot(ax=ax)
         ds_points_q2["v_eff"].isel(quantile=2).plot(ax=ax)
         plt.grid()
 
+        from matplotlib.colors import Normalize
         norm = Normalize(vmin=0., vmax=0.6, clip=False)
         p = da_rgb[0].frames.plot(mode="camera")
         ds.mean(dim="time", keep_attrs=True).velocimetry.plot(
@@ -264,7 +326,116 @@ class Application:
             norm=norm,
             add_colorbar=True
         )
-        p.axes.figure.savefig("ngwerere.jpg", dpi=200)
+        p.axes.figure.savefig(self.pathOf("ngwerere.jpg"), dpi=200)
         
-        self.root.add_widget(Picture(source="ngwerere.jpg", center=self.root.center))
+        self.root.add_widget(Picture(source=self.pathOf("ngwerere.jpg"), center=self.root.center))
         
+        norm = Normalize(vmin=0, vmax=0.6, clip=False)
+        ds_mean = ds.mean(dim="time", keep_attrs=True)
+        p = da_rgb.frames.project()[0].frames.plot(mode="local")
+        
+        self.saveAndAdd("4.2.jpg")
+        ds_points_q.isel(quantile=2).transect.plot(
+            ax=p.axes,
+            mode="local",
+            cmap="rainbow",
+            scale=10,
+            width=0.003,
+            norm=norm,
+            add_colorbar=True,
+        )
+        ds_points_q2.isel(quantile=2).transect.plot(
+            ax=p.axes,
+            mode="local",
+            cmap="rainbow",
+            scale=10,
+            width=0.003,
+            norm=norm,
+            add_colorbar=True,
+        )
+        ds_mean.velocimetry.plot.streamplot(
+            ax=p.axes,
+            mode="local",
+            density=3.,
+            minlength=0.05,
+            linewidth_scale=2,
+            cmap="rainbow",
+            norm=norm,
+            add_colorbar=True
+        )
+        ds_points_q.transect.get_river_flow()
+        print(ds_points_q["river_flow"])
+        ds_points_q2.transect.get_river_flow()
+        print(ds_points_q2["river_flow"])
+        self.saveAndAdd("4.3.jpg")
+        
+    
+    def camera_calibration(self):
+        import matplotlib.pyplot as plt
+        import cv2
+        import copy
+        import glob
+        import numpy as np
+        import os
+        fn = os.path.join("camera_calib","camera_calib_720p.mkv")
+        vid = pyorc.Video(fn, start_frame=0, end_frame=5)
+        frame = vid.get_frame(0, method="rgb")
+        plt.imshow(frame)
+        self.saveAndAdd("5.1.jpg")
+        cam_config = pyorc.CameraConfig(height=720, width=1280)
+
+        #cam_config.set_lens_calibration(fn, chessboard_size=(11, 8), frame_limit=50)
+        cam_config.set_lens_calibration(fn, chessboard_size=(9, 6), plot=False, to_file=True)
+
+        print(f"Camera Matrix: {cam_config.camera_matrix}")
+        print(f"Distortion coefficients: {cam_config.dist_coeffs}")
+
+        paths = glob.glob(os.path.join("camera_calib", "*.png"))
+
+        cols = 3
+        rows = int(np.ceil(len(paths)/cols))
+        rows, cols
+        f = plt.figure(figsize=(16, 3*rows))
+        for n, fn in enumerate(paths):
+            ax = plt.subplot(rows, cols, n + 1)
+            img = cv2.imread(fn)
+            # switch colors
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            ax.imshow(img)
+            ax.tick_params(
+                left=False,
+                right=False,
+                labelleft=False,
+                labelbottom=False,
+                bottom=False,
+            )
+        import cv2
+        import matplotlib.pyplot as plt
+        fn = os.path.join("camera_calib","camera_calib_720p.mkv")
+
+        # open without camera configuration
+        vid = pyorc.Video(fn)
+        frame = vid.get_frame(0, method="rgb")
+
+        # open the video once more
+        vid_undistort = pyorc.Video(fn, camera_config=cam_config, start_frame=0, end_frame=5)
+        # extract the first frame once more
+        frame_undistort = vid_undistort.get_frame(0, method="rgb")
+        diff = np.mean(np.int16(frame) - np.int16(frame_undistort), axis=-1)
+
+        f = plt.figure(figsize=(16, 16))
+        ax1 = plt.axes([0.05, 0.45, 0.3, 0.2])
+        ax2 = plt.axes([0.45, 0.45, 0.3, 0.2])
+        ax3 = plt.axes([0.1, 0.05, 0.6, 0.4])
+        cax = plt.axes([0.75, 0.1, 0.01, 0.2])
+        ax1.set_title("Original")
+        ax2.set_title("Undistorted")
+        ax3.set_title("Difference")
+        ax1.imshow(frame)
+        ax2.imshow(frame_undistort)
+
+        # make some modern art for the difference
+        p = ax3.imshow(diff, cmap="RdBu", vmin=-100, vmax=100)
+        plt.colorbar(p, cax=cax, extend="both")
+        
+        self.saveAndAdd("5.2.jpg")

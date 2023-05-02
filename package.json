@@ -12,6 +12,7 @@
     "android": "npm run docker:run:buildozer -- -v android debug",
     "docker:build:buildozer": "docker run  --volume \"$HOME/.buildozer\":/home/user/.buildozer --volume \"$PWD\":/home/user/hostcwd kivy/buildozer --version",
     "docker:build": "sudo docker build -t kivy .",
+    "db": "npm run docker:build",
     "echo":"echo $PWD",
     "docker:run:console":"sudo docker run -it -v $PWD:/src -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -h \"$HOSTNAME\"   -v $HOME/.Xauthority:/home/lyonn/.Xauthority.gui kivy",
     "docker:run:console1":"sudo docker run -it -v $PWD:/src -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -h \"$HOSTNAME\"  -v $HOME/.Xauthority:/home/lyonn/.Xauthority.gui  kivy",

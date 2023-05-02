@@ -8,10 +8,10 @@ class MockDevController(DeviceController):
         pass
 
     def get_video(self):
-        video_file = "ngwerere_20191103.mp4"
+        video_file = self.pathOf("ngwerere_20191103.mp4")
         return video_file
     def get_picture(self):
-        video_file = "ngwerere_20191103.mp4"
+        video_file = self.pathOf("ngwerere_20191103.mp4")
         return video_file
     def take_picture(self):
         print("Ola")

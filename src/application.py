@@ -56,15 +56,18 @@ class Application:
         plt.legend()
         self.saveAndAdd("3.jpg")
 
-        cam_config.to_file("ngwerere.json")
+        cam_config.to_file(self.pathOf("ngwerere.json"))
         #plt.savefig("3.jpg", bbox_inches="tight", dpi=72)
         #self.root.add_widget(Picture(source="3.jpg", center=self.root.center))
 
         return
     
+    def pathOf(self,name):
+        self.device.pathOf(name)
+        
     def saveAndAdd(self, name):
         plt.savefig(name, bbox_inches="tight", dpi=72)
-        self.root.add_widget(Picture(source=name, center=self.root.center))
+        self.root.add_widget(Picture(source=self.pathOf(name), center=self.root.center))
         
     
     def _mark_points_in_Picture(self,frame):
@@ -89,8 +92,8 @@ class Application:
         return 1182.2
     def process_video_piv(self):
         
-        cam_config = pyorc.load_camera_config("config2.json")
-        video_file = "ngwerere_20191103.mp4"
+        cam_config = pyorc.load_camera_config(self.pathOf("config2.json"))
+        video_file = self.pathOf("ngwerere_20191103.mp4")
         video = pyorc.Video(video_file, camera_config=cam_config, start_frame=0, end_frame=125)
         print(video)
         da = video.get_frames()
@@ -107,15 +110,15 @@ class Application:
         self.saveAndAdd("5.jpg")
 
         piv = da_norm_proj.frames.get_piv()
-        delayed_obj = piv.to_netcdf("ngwerere_piv.nc", compute=False)
+        delayed_obj = piv.to_netcdf(self.pathOf("ngwerere_piv.nc"), compute=False)
         print(delayed_obj)
     
     def filter_velocity_noise(self):
         
         
         f = plt.figure(figsize=(10, 6))
-        ds = xr.open_dataset("ngwerere_piv.nc")
-        video_file = "ngwerere_20191103.mp4"
+        ds = xr.open_dataset(self.pathOf("ngwerere_piv.nc"))
+        video_file = self.pathOf("ngwerere_20191103.mp4")
         video = pyorc.Video(video_file, start_frame=0, end_frame=125)
         video.camera_config = ds.velocimetry.camera_config
         da_rgb = video.get_frames(method="rgb")
@@ -184,7 +187,7 @@ class Application:
         )
         self.saveAndAdd("10.jpg")
         ds_filt2.velocimetry.set_encoding()
-        ds_filt2.to_netcdf("ngwerere_filtered.nc")
+        ds_filt2.to_netcdf(self.pathOf("ngwerere_filtered.nc"))
         frame = video.get_frame(0, method="rgb")
         #da_rgb_proj[0].frames.to_video("3-1.mp4")
         #print(da_rgb_proj[0].frames)
@@ -194,10 +197,10 @@ class Application:
     def plot_velocity(self):
         
         import pandas as pd
-        ds = xr.open_dataset("ngwerere_filtered_input.nc")
+        ds = xr.open_dataset(self.pathOf("ngwerere_filtered_input.nc"))
 
         # also open the original video file
-        video_file = "ngwerere_20191103.mp4"
+        video_file = self.pathOf("ngwerere_20191103.mp4")
         video = pyorc.Video(video_file, start_frame=0, end_frame=1)
 
         # borrow the camera config from the velocimetry results

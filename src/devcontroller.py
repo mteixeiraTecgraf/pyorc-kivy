@@ -1,4 +1,5 @@
 
+import os
 
 class DeviceController():
     def __init__(self, root):
@@ -6,6 +7,8 @@ class DeviceController():
 
     def listen(self, cb):
         self.callback = cb
+    def pathOf(self,name):
+        os.join(os.getcwd(), "data", name)
 
     def get_video(self):
         pass

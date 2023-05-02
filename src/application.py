@@ -3,7 +3,10 @@ import pyorc
 import matplotlib.pyplot as plt
 from basic_model import Picture
 from matplotlib.colors import Normalize
+import cartopy
+import cartopy.crs as ccrs
 
+from  kivy.uix.image import Image
 import os
 
 class Application:
@@ -38,6 +41,9 @@ class Application:
         cam_config = pyorc.CameraConfig(gcps=gcps, crs=32735)
         if 0==1:
             ax = cam_config.plot(tiles="GoogleTiles", tiles_kwargs={"style": "satellite"})
+            print(ax)
+            print("Tiles gootle print")
+            self.saveAndAdd("2b.jpg")
         corners = [
             [292, 817],
             [50, 166],
@@ -63,11 +69,15 @@ class Application:
         return
     
     def pathOf(self,name):
-        self.device.pathOf(name)
-        
+        ret =  self.device.pathOf(name)
+        print("Path returned "+ret)
+        return ret
+
     def saveAndAdd(self, name):
+        name=self.pathOf(name)
         plt.savefig(name, bbox_inches="tight", dpi=72)
-        self.root.add_widget(Picture(source=self.pathOf(name), center=self.root.center))
+        self.root.add_widget(Picture(source=name, center=self.root.center))
+        #self.root.add_widget(Image(source=name, size=self.root.size, center=self.root.center))
         
     
     def _mark_points_in_Picture(self,frame):
@@ -209,11 +219,11 @@ class Application:
         # get the frame as rgb
         da_rgb = video.get_frames(method="rgb")
 
-        cross_section = pd.read_csv("ngwerere_cross_section.csv")
+        cross_section = pd.read_csv(self.pathOf("ngwerere_cross_section.csv"))
         x = cross_section["x"]
         y = cross_section["y"]
         z = cross_section["z"]
-        cross_section2 = pd.read_csv("ngwerere_cross_section_2.csv")
+        cross_section2 = pd.read_csv(self.pathOf("ngwerere_cross_section_2.csv"))
         x2 = cross_section2["x"]
         y2 = cross_section2["y"]
         z2 = cross_section2["z"]

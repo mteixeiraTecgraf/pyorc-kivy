@@ -1,6 +1,7 @@
 
 import os
 
+from os.path import dirname, join
 class DeviceController():
     def __init__(self, root):
         self.root = root
@@ -8,7 +9,8 @@ class DeviceController():
     def listen(self, cb):
         self.callback = cb
     def pathOf(self,name):
-        os.join(os.getcwd(), "data", name)
+        print("Path of " + name)
+        return join("data", name)
 
     def get_video(self):
         pass

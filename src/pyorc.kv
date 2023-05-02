@@ -1,21 +1,116 @@
-#:kivy 1.0
+#:kivy 1.2.0
 #:import kivy kivy
 #:import win kivy.core.window
+#:import KivyLexer kivy.extras.highlight.KivyLexer
+#:import Factory kivy.factory.Factory
 
 
-Widget:
+<MyWidget2>:
     canvas:
         Color:
             rgb: .85, .87, .88
         Rectangle:
             size: self.size
-
     Button:
         text: 'Take a picture'
         width: self.texture_size[0] + dp(40)
         height: '48dp'
-
         on_release: app.take_picture()
+#    Button:
+#        text: 'Take a picture'
+#        width: self.texture_size[0] + dp(40)
+#        height: '48dp'
+ 
+#        on_release: app.take_picture()
+
+<ActionSpinnerOptions@SpinnerOption>
+    background_color: .4, .4, .4, 1
+
+<ActionSpinner@Spinner+ActionItem>
+    canvas.before:
+        Color:
+            rgba: 0.128, 0.128, 0.128, 1
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    border: 27, 20, 12, 12
+    background_normal: 'atlas://data/images/defaulttheme/action_group'
+    option_cls: Factory.ActionSpinnerOptions
+
+
+BoxLayout:
+    orientation: 'vertical'
+
+    canvas.before:
+        Color:
+            rgb: .6, .6, .6
+        Rectangle:
+            size: self.size
+            source: 'data/background.png'
+    ActionBar:
+        ActionView:
+            id: av
+            ActionPrevious:
+            ActionSpinner:
+                id: spnr
+                important: True
+                text: 'Jump to Screen'
+                values: ['a']
+            
+    ScrollView:
+        id: sv
+        size_hint_y: None
+        height: 0
+    ScreenManager:
+        id: sm
+        on_current_screen:
+            idx = 0
+        Screen:
+            TabbedPanel:
+                id: tp
+                do_default_tab: False
+
+                TabbedPanelItem:
+                    id: tab_select
+                    text: 'Movie'
+                    on_release: 
+                    Widget:
+                        id: wid
+                        canvas:
+                            Color:
+                                rgb: .85, .87, .88
+                            Rectangle:
+                                size: self.size
+                        Button:
+                            text: 'Select a Movie'
+                            width: self.texture_size[0] + dp(40)
+                            height: '48dp'
+                            on_release: app.controller.take_picture()
+                
+                TabbedPanelItem:
+                    id: tab_config
+                    text: 'Configure Camera'
+                
+                TabbedPanelItem:
+                    id: tab_process
+                    text: 'Process Video'
+                
+                TabbedPanelItem:
+                    id: tab_result
+                    text: 'Process Result'
+                
+                TabbedPanelItem:
+                    id: tab_player
+                    text: 'TestPlayer'
+                    #Widget:
+                    VideoPlayer:
+                        source:app.videoSource
+                        state: 'play'
+                        options:
+                            app.videoOptions
+
+
+
 <LoginScreen>:
     GridLayout:
         rows: 2
@@ -44,7 +139,8 @@ Widget:
         source: root.source
 
         # create initial image to be 400 pixels width
-        size: 400, 400 / self.image_ratio
+        size: app.root.ids.wid.width-app.picBorder,  (app.root.ids.wid.width-app.picBorder) / self.image_ratio
+        #size: app.root.ids.wid.size
 
         # add shadow background
         canvas.before:
@@ -52,9 +148,9 @@ Widget:
                 rgba: 1,1,1,1
             BorderImage:
                 source: 'shadow32.png'
-                border: (36,36,36,36)
-                size:(self.width+72, self.height+72)
-                pos: (-36,-36)
+                border: (app.picBorder,app.picBorder,app.picBorder,app.picBorder)
+                size:(self.width+app.picBorder*2, self.height+app.picBorder*2)
+                pos: (-app.picBorder,-app.picBorder)
 
 <MyWidget>:
     label_widget: label_widget

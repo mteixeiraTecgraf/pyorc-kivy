@@ -7,6 +7,7 @@ from factory import Factory, Root
 from devcontroller import DeviceController
 from application import Application
 from basic_model import Picture
+from os.path import dirname, join
 
 
 import os
@@ -24,11 +25,14 @@ from kivy.logger import Logger
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
+from  kivy.uix.videoplayer import VideoPlayer
 
 from random import randint
 #from kivy.Image import Image
 from matplotlib.colors import Normalize
 
+class MyWidget2(Widget):
+    pass
 class MyWidget(Widget):
     pass
 
@@ -53,12 +57,18 @@ class Test(GridLayout):
 
 
 class PyorcApp(App):
-
+    videoOptions = {
+        #'allow_stretch': True
+    }
+    picBorder = 0
+    videoSource = dirname(__file__)+'/data/ngwerere_20191103.mp4'
+    #videoSource = join(dirname(__file__),'data','clip_schedule_20210327_120612.mkv')
+    #videoSource = join(dirname(__file__),'data','cityCC0.mpg')
     def build(self):
-
+        #self.videoOptions = {'allow_stretch': True}
         self.index = 0
         self.factory = Factory()
-        self.factory.provider.addSingletonInstance(Root, self.root)
+        self.factory.provider.addSingletonInstance(Root, self.root.ids.wid)
         # = self.factory.provider.get(DeviceController)
         self.application = self.factory.provider.get(Application)
         self.controller = self.application.device

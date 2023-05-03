@@ -258,7 +258,7 @@ class Application:
         ds_mask2.velocimetry.set_encoding()
         ds_mask2.to_netcdf(self.pathOf("ngwerere_filtered.nc"))
         frame = video.get_frame(0, method="rgb")
-        da_rgb_proj[0].frames.to_video("3-1.mp4")
+        #da_rgb_proj[0].frames.to_video("3-1.mp4")
         print(da_rgb_proj[0].frames)
         plt.imshow(frame)
         p.axes.figure.savefig(self.pathOf("3-1.jpg"), dpi=200)
@@ -377,6 +377,7 @@ class Application:
         import glob
         import numpy as np
         import os
+        f = plt.figure()
         fn = os.path.join("camera_calib","camera_calib_720p.mkv")
         vid = pyorc.Video(fn, start_frame=0, end_frame=5)
         frame = vid.get_frame(0, method="rgb")

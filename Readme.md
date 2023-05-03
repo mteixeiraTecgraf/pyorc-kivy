@@ -39,3 +39,7 @@
     - Problemas em video
       - Instalado libgstreamer1.0
       - pip install ffpyplayer 
+   - Cartopy dando problema ao rodar buildozer para deploy para android
+      - /usr/include/limits.h:26:10: fatal error: 'bits/libc-header-start.h' file not found
+      - possivel solucao sudo apt-get install gcc-multilib
+         -  https://stackoverflow.com/questions/54082459/fatal-error-bits-libc-header-start-h-no-such-file-or-directory-while-compili

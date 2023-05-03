@@ -351,6 +351,7 @@ class Application:
         import glob
         import numpy as np
         import os
+        f = plt.figure()
         fn = os.path.join("camera_calib","camera_calib_720p.mkv")
         vid = pyorc.Video(fn, start_frame=0, end_frame=5)
         frame = vid.get_frame(0, method="rgb")

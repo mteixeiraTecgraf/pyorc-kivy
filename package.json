@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "docker:run:buildozer": "sudo docker run $npm_config_docker_args --volume \"$PWD/.buildozer\":/home/user/.buildozer --volume \"$npm_config_dir\":/home/user/hostcwd kivy/buildozer",
+    "docker:run:buildozer": "echo $PWD && echo $npm_config_dir && sudo docker run $npm_config_docker_args --volume \"$PWD/.buildozer\":/home/user/.buildozer --volume \"$npm_config_dir\":/home/user/hostcwd kivy/buildozer",
     "docker:run:buildozerversion": "npm run docker:run:buildozer -- --version",
     "drbv": "npm run docker:run:buildozerversion",
     "buildozer": "npm run docker:run:buildozer",
@@ -14,7 +14,7 @@
     "docker:build": "sudo docker build -t kivy .",
     "db": "npm run docker:build",
     "echo":"echo $PWD",
-    "docker:run:console":"sudo docker run -it -v $PWD:/src -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -h \"$HOSTNAME\"   -v $HOME/.Xauthority:/home/lyonn/.Xauthority.gui kivy",
+    "docker:run:console":"sudo docker run -it -v $PWD:/src -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -h \"$HOSTNAME\"   -v $HOME/.Xauthority:/home/lyonn/.Xauthority.gui --volume \"$PWD/.buildozer\":/home/lyonn/.buildozer kivy",
     "docker:run:console1":"sudo docker run -it -v $PWD:/src -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -h \"$HOSTNAME\"  -v $HOME/.Xauthority:/home/lyonn/.Xauthority.gui  kivy",
     "drc": "npm run docker:run:console",
     "test:x11:build": "sudo docker build -t gui -f ./testX11.dockerfile .",

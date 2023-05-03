@@ -28,7 +28,7 @@ source.include_exts = py,png,jpg,kv,atlas
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 0.1
+version = 0.2
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -36,7 +36,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,xarray,pyopenrivercam==0.2.3
+requirements = python3,kivy,xarray,pyopenrivercam==0.4.3,cartopy,ffpyplayer,geopandas
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -150,7 +150,7 @@ fullscreen = 0
 # (str) Path to a custom blacklist file
 #android.blacklist_src =
 
-# (list) List of Java .jar files to add to the libs so that pyjnius can access
+# (list) List of Java .jar files to add to the libs so thaAndroidManifest.xmlt pyjnius can access
 # their classes. Don't add jars that you do not need, since extra jars can slow
 # down the build process. Allows wildcards matching, for example:
 # OUYA-ODK/libs/*.jar
@@ -238,7 +238,7 @@ fullscreen = 0
 #android.copy_libs = 1
 
 # (str) The Android arch to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
-android.arch = armeabi-v7a
+android.archs = x86,armeabi-v7a
 
 # (int) overrides automatic versionCode computation (used in build.gradle)
 # this is not the same as app version and should only be edited if you know what you're doing

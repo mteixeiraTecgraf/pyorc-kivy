@@ -30,3 +30,12 @@
   - Testar api em android/kivy
   - Testar codigo do pyorc em android
   - Testar integracao app android com serverzip
+
+
+
+  - Cartopy
+    - geos_c.h: No such file or directory
+     - Apos instalar libgeos-dev funcionou
+    - Problemas em video
+      - Instalado libgstreamer1.0
+      - pip install ffpyplayer 

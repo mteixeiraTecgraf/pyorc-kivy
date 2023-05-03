@@ -3,8 +3,8 @@ import pyorc
 import matplotlib.pyplot as plt
 from basic_model import Picture
 from matplotlib.colors import Normalize
-import cartopy
-import cartopy.crs as ccrs
+#import cartopy
+#import cartopy.crs as ccrs
 
 from  kivy.uix.image import Image
 from dask.diagnostics import ProgressBar
@@ -64,12 +64,12 @@ class Application:
         self.saveAndAdd("1.3.jpg")
 
         #ax1 = cam_config.plot(tiles="GoogleTiles", tiles_kwargs={"style": "satellite"})
-        f = plt.figure()
-        ax2 = plt.axes()
-        ax2.imshow(frame)
-        cam_config.plot(ax=ax2, camera=True)
+        #f = plt.figure()
+        #ax2 = plt.axes()
+        #ax2.imshow(frame)
+        #cam_config.plot(ax=ax2, camera=True)
 
-        plt.savefig(self.pathOf("ngwerere_camconfig.jpg"), bbox_inches="tight", dpi=72)
+        #plt.savefig(self.pathOf("ngwerere_camconfig.jpg"), bbox_inches="tight", dpi=72)
 
 
         cam_config.to_file(self.pathOf("ngwerere.json"))
@@ -345,6 +345,7 @@ class Application:
         
     
     def camera_calibration(self):
+        return
         import matplotlib.pyplot as plt
         import cv2
         import copy
@@ -357,7 +358,7 @@ class Application:
         frame = vid.get_frame(0, method="rgb")
         plt.imshow(frame)
         self.saveAndAdd("5.1.jpg")
-        cam_config = pyorc.CameraConfig(height=720, width=1280)
+        cam_config = pyorc.CameraConfig()
 
         #cam_config.set_lens_calibration(fn, chessboard_size=(11, 8), frame_limit=50)
         cam_config.set_lens_calibration(fn, chessboard_size=(9, 6), plot=False, to_file=True)

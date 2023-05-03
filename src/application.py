@@ -39,7 +39,7 @@ class Application:
         gcps["z_0"] = self._enter_z0()
         height, width = frame.shape[0:2]
         #cam_config = pyorc.CameraConfig(height=height, width=width, gcps=gcps, crs=32735)
-        cam_config = pyorc.CameraConfig(gcps=gcps, crs=32735)
+        cam_config = pyorc.CameraConfig(height=height, width=width, gcps=gcps, crs=32735)
         if 0==1:
             ax = cam_config.plot(tiles="GoogleTiles", tiles_kwargs={"style": "satellite"})
             print(ax)
@@ -51,8 +51,8 @@ class Application:
             [1200, 236],
             [1600, 834]
         ]
-        #cam_config.set_bbox_from_corners(corners)
-        cam_config.set_corners(corners)
+        cam_config.set_bbox_from_corners(corners)
+        #cam_config.set_corners(corners)
         cam_config.resolution = 0.01
         cam_config.window_size = 25
         f = plt.figure(figsize=(10, 6))
@@ -112,9 +112,9 @@ class Application:
         return 1182.2
     def process_video_piv(self):
         
-        cam_config = pyorc.load_camera_config(self.pathOf("config2.json"))
+        cam_config = pyorc.load_camera_config(self.pathOf("config2b.json"))
         video_file = self.pathOf("ngwerere_20191103.mp4")
-        video = pyorc.Video(video_file, camera_config=cam_config, start_frame=0, end_frame=125)
+        video = pyorc.Video(video_file, camera_config=cam_config, start_frame=0, end_frame=125, stabilize="fixed", h_a=0.)
         print(video)
         da = video.get_frames()
         da[0].frames.plot(cmap="gray")
@@ -184,10 +184,22 @@ class Application:
         )
         self.saveAndAdd("3.2.jpg")
 
-        ds_filt = ds.velocimetry.filter_temporal()
-        ds_mean_filt = ds_filt.mean(dim="time", keep_attrs=True)
+        import copy
+        ds_mask = copy.deepcopy(ds)
+        mask_corr = ds_mask.velocimetry.mask.corr(inplace=True)
+        mask_minmax = ds_mask.velocimetry.mask.minmax(inplace=True)
+        mask_rolling = ds_mask.velocimetry.mask.rolling(inplace=True)
+        mask_outliers = ds_mask.velocimetry.mask.outliers(inplace=True)
+        mask_var = ds_mask.velocimetry.mask.variance(inplace=True)
+        mask_angle = ds_mask.velocimetry.mask.angle(inplace=True)
+        mask_count = ds_mask.velocimetry.mask.count(inplace=True)
+
+        ds_mean_mask = ds_mask.mean(dim="time", keep_attrs=True)
+
+        #ds_filt = ds.velocimetry.filter_temporal()
+        #ds_mean_filt = ds_filt.mean(dim="time", keep_attrs=True)
         p = da_rgb_proj[0].frames.plot()
-        ds_mean_filt.velocimetry.plot(
+        ds_mean_mask.velocimetry.plot(
             ax=p.axes,
             alpha=0.4,
             cmap="rainbow",
@@ -199,12 +211,26 @@ class Application:
         self.saveAndAdd("3.3.jpg")
 
         import numpy as np
-        ds_filt2 = ds.velocimetry.filter_temporal(kwargs_angle=dict(angle_tolerance=0.5*np.pi))
-        ds_filt2.velocimetry.filter_spatial(filter_nan=False, inplace=True, kwargs_median=dict(wdw=2))
-        ds_mean_filt2 = ds_filt2.mean(dim="time", keep_attrs=True)
+
+        ds_mask2 = copy.deepcopy(ds)
+        ds_mask2.velocimetry.mask.corr(inplace=True)
+        ds_mask2.velocimetry.mask.minmax(inplace=True)
+        ds_mask2.velocimetry.mask.rolling(inplace=True)
+        ds_mask2.velocimetry.mask.outliers(inplace=True)
+        ds_mask2.velocimetry.mask.variance(inplace=True)
+        ds_mask2.velocimetry.mask.angle(angle_tolerance=0.5*np.pi)
+        ds_mask2.velocimetry.mask.count(inplace=True)
+        ds_mask2.velocimetry.mask.window_mean(wdw=2, inplace=True, tolerance=0.5, reduce_time=True)
+
+        # Now first average in time before applying any filter that only works in space.
+        ds_mean_mask2 = ds_mask2.mean(dim="time", keep_attrs=True)
+
+        #ds_filt2 = ds.velocimetry.filter_temporal(kwargs_angle=dict(angle_tolerance=0.5*np.pi))
+        #ds_filt2.velocimetry.filter_spatial(filter_nan=False, inplace=True, kwargs_median=dict(wdw=2))
+        ds_mean_mask2 = ds_mask2.mean(dim="time", keep_attrs=True)
         p = da_rgb_proj[0].frames.plot()
 
-        ds_mean_filt2.velocimetry.plot(
+        ds_mean_mask2.velocimetry.plot(
             ax=p.axes,
             alpha=0.4,
             cmap="rainbow",
@@ -218,7 +244,7 @@ class Application:
         #p = da_rgb_proj[0].frames.plot(mode="geographical")
         
         p = da_rgb[0].frames.plot(mode="camera")
-        ds_mean_filt2.velocimetry.plot(
+        ds_mean_mask2.velocimetry.plot(
             ax=p.axes,
             mode="camera",
             alpha=0.4,
@@ -229,18 +255,18 @@ class Application:
             add_colorbar=True
         )
         self.saveAndAdd("3.5.jpg")
-        ds_filt2.velocimetry.set_encoding()
-        ds_filt2.to_netcdf(self.pathOf("ngwerere_filtered.nc"))
+        ds_mask2.velocimetry.set_encoding()
+        ds_mask2.to_netcdf(self.pathOf("ngwerere_filtered.nc"))
         frame = video.get_frame(0, method="rgb")
         #da_rgb_proj[0].frames.to_video("3-1.mp4")
-        #print(da_rgb_proj[0].frames)
-        #plt.imshow(frame)
+        print(da_rgb_proj[0].frames)
+        plt.imshow(frame)
         p.axes.figure.savefig(self.pathOf("3-1.jpg"), dpi=200)
 
     def plot_velocity(self):
         
         import pandas as pd
-        ds = xr.open_dataset(self.pathOf("ngwerere_filtered_input.nc"))
+        ds = xr.open_dataset(self.pathOf("ngwerere_masked.nc"))
 
         # also open the original video file
         video_file = self.pathOf("ngwerere_20191103.mp4")
@@ -264,8 +290,8 @@ class Application:
 
         ds_points = ds.velocimetry.get_transect(x, y, z, crs=32735, rolling=4)
         ds_points2 = ds.velocimetry.get_transect(x2, y2, z2, crs=32735, rolling=4)
-        ds_points_q = ds_points.transect.get_q()
-        ds_points_q2 = ds_points2.transect.get_q()
+        ds_points_q = ds_points.transect.get_q(fill_method="log_interp")
+        ds_points_q2 = ds_points2.transect.get_q(fill_method="log_interp")
         ax = plt.axes()
         ds_points_q["v_eff"].isel(quantile=2).plot(ax=ax)
         ds_points_q2["v_eff"].isel(quantile=2).plot(ax=ax)

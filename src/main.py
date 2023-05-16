@@ -69,6 +69,7 @@ class PyorcApp(App):
         self.index = 0
         self.factory = Factory()
         self.factory.provider.addSingletonInstance(Root, self.root.ids.wid)
+        self.factory.provider.addSingletonInstance(App, self)
         # = self.factory.provider.get(DeviceController)
         self.application = self.factory.provider.get(Application)
         self.controller = self.application.device

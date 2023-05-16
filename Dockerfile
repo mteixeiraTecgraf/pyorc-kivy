@@ -1,7 +1,8 @@
 FROM python:3.10
 
  RUN apt-get update && \
-        apt-get install -y gcc gcc-multilib ffmpeg libsm6 libxext6 software-properties-common default-jdk unzip zip autoconf libtool libgeos-dev libmtdev-dev
+        apt-get install -y gcc gcc-multilib ffmpeg libsm6 libxext6 software-properties-common \
+            default-jdk unzip zip autoconf libtool libgeos-dev libmtdev-dev autopoint
         #openjdk-18-jdk-headless problema
         ## for cartopy 
 ##     apt-get install -y software-properties-common && \

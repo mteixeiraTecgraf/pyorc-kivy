@@ -11,10 +11,15 @@ from dask.diagnostics import ProgressBar
 import os
 
 class Application:
-    def __init__(self, device):
+    def __init__(self, device, app):
         self.device = device
         self.root = device.root
+        self.app = app
 
+    def load(self,f1, f2):
+        print(f1,f2)
+        #self.app.root.ids.
+        self.app.videoSource = f2
     def get_video_and_configure_camera(self, video):
         # uncomment line below if you want to view coordinates interactively
         dir=os.getcwd()
@@ -343,6 +348,7 @@ class Application:
         print(ds_points_q2["river_flow"])
         self.saveAndAdd("4.3.jpg")
         
+    
     
     def camera_calibration(self):
         return

@@ -4,6 +4,7 @@ from mockDevController import MockDevController
 from devcontroller import DeviceController
 from application import Application
 
+from kivy.app import App
 class Root:
     pass
 
@@ -16,7 +17,7 @@ android = False
 class Factory:
     def __init__(self):
         self.provider = Provider()
-        self.provider.addSingleton(Application,Application,[DeviceController])
+        self.provider.addSingleton(Application,Application,[DeviceController, App])
             #self.provider.addSingletonFunc(DeviceController,deviceController)
         if(android):
             self.provider.addSingletonFunc(DeviceController,deviceController)

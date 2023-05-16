@@ -4,3 +4,4 @@ pyopenrivercam==0.2.3
 buildozer
 ffpyplayer
 geopandas
+pandas
